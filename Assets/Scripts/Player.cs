@@ -12,12 +12,14 @@ public class Player : MonoBehaviour
     private bool isRunning = true;
     public Projectile laserPrefab; //setup prefab for laser of type pprojectile
     public float speed = 5.0f;
-
+    private bool gameStarted = false;
     [SerializeField] private WebSocketClient websocket;
 
     private bool _laserActive;
 
-    void Start() {
+    async void Start() {
+
+        
         process = new Process();
         process.StartInfo.FileName = "cmd.exe"; // Use cmd.exe to run the batch file
         process.StartInfo.Arguments = "/C \"C:/intelFPGA_lite/18.1/nios2eds/Nios II Command Shell.bat\" nios2-terminal";
@@ -25,6 +27,8 @@ public class Player : MonoBehaviour
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true; // For debugging
         process.StartInfo.CreateNoWindow = true;
+        await waitForPlayers();
+        gameStarted = true;
 
          try
         {
@@ -56,7 +60,15 @@ public class Player : MonoBehaviour
         }
     }
 
-private async Task SendMovementAsync(string command) {
+    //better way to implement this is have a public function in websocket.cs but i cba rn
+    private async Task waitForPlayers() {
+        while (WebSocketClient.serverFull == false) {
+            UnityEngine.Debug.Log("Waiting for players");
+            await Task.Delay(3000);
+        }
+    }
+
+    private async Task SendMovementAsync(string command) {
 
         UnityEngine.Debug.Log("Sending" + command);
         if (websocket == null) {
@@ -66,6 +78,7 @@ private async Task SendMovementAsync(string command) {
     }
     private void Update()
     {
+        if (!gameStarted) return;
         string command;
         lock (this) // Ensure thread safety
         {
@@ -79,7 +92,7 @@ private async Task SendMovementAsync(string command) {
             switch (command[0])
             {
                 case 'L':
-                    this.transform.position += Vector3.left *this.speed* Time.deltaTime;
+                    this.transform.position += Vector3.left * this.speed * Time.deltaTime;
                     break;
                 case 'R':
                     this.transform.position += Vector3.right *this.speed * Time.deltaTime;
@@ -110,7 +123,7 @@ private async Task SendMovementAsync(string command) {
         }
         await websocket.sendPosition(position.ToString());
     }
- private async Task SendLaserAsync() {
+    private async Task SendLaserAsync() {
         await websocket.sendLaser();
     }
 
@@ -146,5 +159,5 @@ void OnApplicationQuit()
             process.Dispose();
         }
         UnityEngine.Debug.Log("nios2-terminal subprocess terminated");
-    }
+    }
 }
