@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using System.Diagnostics;
 using System.Threading;
-using System.Collections;
+using System.Threading.Tasks;
 
 public class Player : MonoBehaviour
 {
@@ -13,8 +13,9 @@ public class Player : MonoBehaviour
     public Projectile laserPrefab; //setup prefab for laser of type pprojectile
     public float speed = 5.0f;
 
+    [SerializeField] private WebSocketClient websocket;
+
     private bool _laserActive;
-    private bool canShootTriple = false;
 
     void Start() {
         process = new Process();
@@ -54,6 +55,15 @@ public class Player : MonoBehaviour
             Thread.Sleep(1); // Small sleep to reduce CPU usage
         }
     }
+
+private async Task SendMovementAsync(string command) {
+
+        UnityEngine.Debug.Log("Sending" + command);
+        if (websocket == null) {
+            UnityEngine.Debug.Log("NULL");
+        }
+        await websocket.sendMovement(command);
+    }
     private void Update()
     {
         string command;
@@ -65,15 +75,14 @@ public class Player : MonoBehaviour
         
         if (!string.IsNullOrEmpty(command))
         {
-            UnityEngine.Debug.Log(command);
             float lastTime = Time.time;
             switch (command[0])
             {
                 case 'L':
-                    this.transform.position += Vector3.left * this.speed * Time.deltaTime;
+                    this.transform.position += Vector3.left *this.speed* Time.deltaTime;
                     break;
                 case 'R':
-                    this.transform.position += Vector3.right * this.speed * Time.deltaTime;
+                    this.transform.position += Vector3.right *this.speed * Time.deltaTime;
 
                     break;
                 case 'S':
@@ -83,39 +92,38 @@ public class Player : MonoBehaviour
             {
                 case 'Y':
                 Shoot();
+                _=SendLaserAsync();
                 break;
                 case 'N':
                 break;
             }
+        //command = string.Concat(command[0], command[2]);
+        //_=SendMovementAsync(command);
+        _=SendPositionAsync(this.transform.position.x);
+
         }
         
         
     }
+    private async Task SendPositionAsync(float position) {
+        if (websocket == null) {
+        }
+        await websocket.sendPosition(position.ToString());
+    }
+ private async Task SendLaserAsync() {
+        await websocket.sendLaser();
+    }
+
     private void Shoot()
     {
-        if (!_laserActive)
-        {
-            Projectile projectile = Instantiate(this.laserPrefab, this.transform.position, Quaternion.identity);
-            projectile.destroyed += LaserDestroyed;
-
-            if (canShootTriple)
-            {
-                float offsetX = 0.2f;
-
-                // Left laser
-                Projectile leftProjectile = Instantiate(this.laserPrefab, this.transform.position + new Vector3(-offsetX, 0, 0), Quaternion.identity);
-                leftProjectile.destroyed += LaserDestroyed;
-
-                // Right laser
-                Projectile rightProjectile = Instantiate(this.laserPrefab, this.transform.position + new Vector3(offsetX, 0, 0), Quaternion.identity);
-                rightProjectile.destroyed += LaserDestroyed;
-            }
-
+        if (!_laserActive) {
+             //when we shoot we instantiate a new prefab, using the players position and rotation is set to 'default' or identity
+             Projectile projectile = Instantiate(this.laserPrefab, this.transform.position, Quaternion.identity);
+             projectile.destroyed += LaserDestroyed;
             _laserActive = true;
         }
+      
     }
-
-
     private void LaserDestroyed() 
     {
         _laserActive = false;
@@ -128,22 +136,7 @@ public class Player : MonoBehaviour
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
-
-    public IEnumerator ActivateTripleShot(float duration)
-    {
-        canShootTriple = true;
-        yield return new WaitForSeconds(duration);
-        canShootTriple = false;
-    }
-
-    public IEnumerator ActivateSpeedBoost(float duration)
-    {
-        speed *= 2; // Double the speed
-        yield return new WaitForSeconds(duration);
-        speed /= 2; // Reset speed
-    }
-
-    void OnApplicationQuit()
+void OnApplicationQuit()
     {
         isRunning = false;
         if (process != null && !process.HasExited)
