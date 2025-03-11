@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 using System.Diagnostics;
 using System.Threading;
 using System.Collections;
+using System.Threading.Tasks;
 
 public class Player : MonoBehaviour
 {
@@ -15,8 +16,12 @@ public class Player : MonoBehaviour
 
     private bool _laserActive;
     private bool canShootTriple = false;
+    private bool gameStarted = false;
+    [SerializeField] private WebSocketClient websocket;
 
-    void Start() {
+    async void Start() {
+
+        
         process = new Process();
         process.StartInfo.FileName = "cmd.exe"; // Use cmd.exe to run the batch file
         process.StartInfo.Arguments = "/C \"C:/intelFPGA_lite/18.1/nios2eds/Nios II Command Shell.bat\" nios2-terminal";
@@ -24,6 +29,8 @@ public class Player : MonoBehaviour
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true; // For debugging
         process.StartInfo.CreateNoWindow = true;
+        await waitForPlayers();
+        gameStarted = true;
 
          try
         {
@@ -54,8 +61,26 @@ public class Player : MonoBehaviour
             Thread.Sleep(1); // Small sleep to reduce CPU usage
         }
     }
+
+    //better way to implement this is have a public function in websocket.cs but i cba rn
+    private async Task waitForPlayers() {
+        while (WebSocketClient.serverFull == false) {
+            UnityEngine.Debug.Log("Waiting for players");
+            await Task.Delay(3000);
+        }
+    }
+
+    private async Task SendMovementAsync(string command) {
+
+        UnityEngine.Debug.Log("Sending" + command);
+        if (websocket == null) {
+            UnityEngine.Debug.Log("NULL");
+        }
+        await websocket.sendMovement(command);
+    }
     private void Update()
     {
+        if (!gameStarted) return;
         string command;
         lock (this) // Ensure thread safety
         {
@@ -65,7 +90,6 @@ public class Player : MonoBehaviour
         
         if (!string.IsNullOrEmpty(command))
         {
-            UnityEngine.Debug.Log(command);
             float lastTime = Time.time;
             switch (command[0])
             {
@@ -83,22 +107,35 @@ public class Player : MonoBehaviour
             {
                 case 'Y':
                 Shoot();
+                _=SendLaserAsync();
                 break;
                 case 'N':
                 break;
             }
+        //command = string.Concat(command[0], command[2]);
+        //_=SendMovementAsync(command);
+        _=SendPositionAsync(this.transform.position.x);
+
         }
         
         
     }
+    private async Task SendPositionAsync(float position) {
+        if (websocket == null) {
+        }
+        await websocket.sendPosition(position.ToString());
+    }
+    private async Task SendLaserAsync() {
+        await websocket.sendLaser();
+    }
+
     private void Shoot()
     {
-        if (!_laserActive)
-        {
-            Projectile projectile = Instantiate(this.laserPrefab, this.transform.position, Quaternion.identity);
-            projectile.destroyed += LaserDestroyed;
-
-            if (canShootTriple)
+        if (!_laserActive) {
+             //when we shoot we instantiate a new prefab, using the players position and rotation is set to 'default' or identity
+             Projectile projectile = Instantiate(this.laserPrefab, this.transform.position, Quaternion.identity);
+             projectile.destroyed += LaserDestroyed;
+             if (canShootTriple)
             {
                 float offsetX = 0.2f;
 
@@ -110,12 +147,10 @@ public class Player : MonoBehaviour
                 Projectile rightProjectile = Instantiate(this.laserPrefab, this.transform.position + new Vector3(offsetX, 0, 0), Quaternion.identity);
                 rightProjectile.destroyed += LaserDestroyed;
             }
-
             _laserActive = true;
         }
+      
     }
-
-
     private void LaserDestroyed() 
     {
         _laserActive = false;
