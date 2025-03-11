@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
 
 public class MysteryShip : MonoBehaviour
 {
-    [SerializeField] private WebSocketClient websocket;
     [SerializeField] private Invaders invaders; // Reference to Invaders script (assign in Inspector)
     public Projectile missilePrefab;
+    public GameObject[] powerUpPrefabs;
+    public float powerUpDropChance = 0.02f; // 20% chance to drop a power-up
     public System.Action killed;
     float elapsedTime = 0.0f;
     public static float FinalTime { get; private set; } // Static variable to hold amountKilled
@@ -16,7 +16,7 @@ public class MysteryShip : MonoBehaviour
     public float speed = 2.0f; // Default speed value
     private Vector3 _direction = Vector2.right;
 
-    private bool gameStarted = false;
+    private float powerUpDropInterval = 2.0f; // Interval between random power-up drops
 
     private void Awake()
     {
@@ -38,25 +38,20 @@ public class MysteryShip : MonoBehaviour
         }
     }
 
-    private async void Start()
+    private void Start()
     {
         elapsedTime = 0f; // Initialize timer at the start
-        await waitForPlayers();
-        gameStarted = true;
-        InvokeRepeating(nameof(MissileAttack), this.missileAttackRate, this.missileAttackRate);
-    }
 
-    private async Task waitForPlayers() {
-        while (WebSocketClient.serverFull == false) {
-            Debug.Log("Waiting for players");
-            await Task.Delay(1000);
-        }
+        InvokeRepeating(nameof(MissileAttack), this.missileAttackRate, this.missileAttackRate);
+
+        // Start the random power-up drop process
+        InvokeRepeating(nameof(DropPowerUp), powerUpDropInterval, powerUpDropInterval);
     }
 
     private void Update()
     {
-        if (!gameStarted) return;
         elapsedTime += Time.deltaTime;
+
         // Move the ship horizontally, flipping direction at screen edges
         this.transform.position += _direction * speed * Time.deltaTime;
         Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
@@ -72,38 +67,35 @@ public class MysteryShip : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void DropPowerUp()
     {
-        if (allKilled && other.gameObject.layer == LayerMask.NameToLayer("Laser"))
+        // Attempt to drop a power-up at a random chance
+        if (Random.value < powerUpDropChance && powerUpPrefabs.Length > 0)
         {
-            FinalTime = elapsedTime;
-            this.gameObject.SetActive(false); // Deactivate the ship
-            SceneManager.LoadScene("victoryScene");
-
+            int randomIndex = Random.Range(0, powerUpPrefabs.Length);
+            Instantiate(powerUpPrefabs[randomIndex], this.transform.position, Quaternion.identity);
         }
     }
 
     private void MakeKillable()
     {
-        
         allKilled = true; // Set flag to allow killing
         this.missileAttackRate = 1.0f; //shoots faster
         Debug.Log("MysteryShip is now killable!");
-        
     }
 
     private void MissileAttack()
     {
         if (this.gameObject.activeInHierarchy) // Only spawn missiles if ship is active
         {
-            Debug.Log("MissileAttack() called"); // Check if the function is running
+            Debug.Log("MissileAttack() called");
 
-            if (Random.value < 0.9f) // 50% chance to spawn missile
+            if (Random.value < 0.9f) // 90% chance to spawn missile
             {
-                            Debug.Log("BANG"); // Check if the function is running
+                Debug.Log("BANG");
 
-Instantiate(missilePrefab, this.transform.position , Quaternion.identity);
+                Instantiate(missilePrefab, this.transform.position, Quaternion.identity);
             }
-        }
-    }
+        }
+    }
 }

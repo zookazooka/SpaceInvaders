@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
 public class Invaders : MonoBehaviour
 {
     public int rows = 5;
@@ -11,13 +10,6 @@ public class Invaders : MonoBehaviour
     public Invader[] prefabs;
 
     public float missileAttackRate = 1.0f;
-
-    public int[] invaderArray;
-
-    public Invader[] invaderObjects;
-
-    public WebSocketClient websocket;
-    private bool gameStarted = false;
 
 public event System.Action allKilled = delegate { }; // Prevent null reference
 
@@ -33,10 +25,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
     //this produces an invader for each row and column we have set, they then have thir positions set in a grid by the following for loops
     private void Awake()
-    {   
-
-        invaderArray = new int[rows * columns];
-        invaderObjects = new Invader[rows*columns];
+    {
         for (int row = 0; row <this.rows; row++){
             //width and height of our grid
             float width = 2.0f * (this.columns-1);
@@ -47,26 +36,18 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
             Vector3 rowPosition = new Vector3(centering.x , centering.y + row*2.0f ,0.0f);
 
             for (int col = 0; col<this.columns; col++) {
-
-                int index = row * columns + col;
-
                 Invader invader = Instantiate(this.prefabs[row], this.transform); //this adds to the game
-                invader.killed += () => InvaderKilled(index);//rund invaderKilled on action invoked
+                invader.killed += InvaderKilled;//rund invaderKilled on action invoked
                 Vector3 position = rowPosition;
                 position.x += col * 2.0f; //this changes the spacing for each invader
 
                 invader.transform.localPosition = position; //sets the in game values should set local vals so parent object can still effect
-                invaderArray[index] = 1;
-                invaderObjects[index] = invader;
-
             }
         }
     }
 
     private void Update() //update is called every frame the game is running
     {
-
-        if (!gameStarted) return;
         this.transform.position += _direction * this.speed.Evaluate(this.percentKilled) * Time.deltaTime; //moves the block of invaders to the right initially
         Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
         Vector3 rightEdge = Camera.main.ViewportToWorldPoint(Vector3.right);
@@ -94,65 +75,21 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
         position.y -= 1.0f; //advance the invaders down the screen by 1
         this.transform.position = position;
     }
-    public void InvaderKilled(int index) {
-        UnityEngine.Debug.Log("RUNS HERE");
-        if (invaderArray[index] == 1)
-        {
-            amountKilled +=1;
-            invaderArray[index] = 0;
-            
+    private void InvaderKilled() {
+        amountKilled +=1;
 
-            if (this.amountKilled >= totalInvaders){
-                //runs when last invader dies
-                this.allKilled.Invoke();
-            }
-            
-            _=SendIndexAsync(index.ToString());
-            
-        }
-        
-    }
+        if (this.amountKilled >= totalInvaders){
+            //runs when last invader dies
+            this.allKilled.Invoke();
 
-    async private Task SendIndexAsync(string index){
-        await websocket.sendIndex(index);
-    }
 
-    public void KillInvader(int index) {
-        if (invaderArray[index] == 1)
-        {
-            amountKilled +=1;
-            invaderArray[index] = 0;
-            invaderObjects[index].gameObject.SetActive(false);
-            
-
-            if (this.amountKilled >= totalInvaders){
-                //runs when last invader dies
-                this.allKilled.Invoke();
-            }
-            
         }
     }
 
-
-
-    
-
-    private async void Start()
+    private void Start()
     {
-        await waitForPlayers();
-        gameStarted = true;
         InvokeRepeating(nameof(MissileAttack), this.missileAttackRate, this.missileAttackRate);
     }
-
-    private async Task waitForPlayers() {
-        while (WebSocketClient.serverFull == false) {
-            Debug.Log("Waiting for players");
-            await Task.Delay(1000);
-        }
-    }
-
-
-
     private void MissileAttack()
     {
         foreach(Transform invader in this.transform) 
@@ -165,28 +102,8 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
             //missile spawns are inversly proportional to number of invaders alive
             if (Random.value < (1.0f / (float)(totalInvaders-amountKilled))) {
                 Instantiate(this.missilePrefab, invader.position, Quaternion.identity);
-
-                _=SendMPositionAsync(invader.position.ToString());
-
                 break; //means only one missile can spawn per cycle
             }
         }
     }
-
-    async private Task SendMPositionAsync(string position) {
-        await websocket.sendMissilePosition(position);
-    }
-
-    public void RemoteMissileAttack(string position)
-    {
-        position = position.Trim('(', ')');
-        string[] components = position.Split(',');
-
-        float x = float.Parse(components[0]);
-        float y = float.Parse(components[1]);
-        float z = float.Parse(components[2]);
-
-        Vector3 invaderPos = new Vector3(x, y, z);
-        Instantiate(this.missilePrefab, invaderPos, Quaternion.identity);
-    }
 }
