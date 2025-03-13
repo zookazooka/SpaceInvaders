@@ -78,3 +78,7 @@ crashlytics-build.properties
 *.sln
 Logs/
 UserSettings/
+
+
+#Ignore 
+node_modules

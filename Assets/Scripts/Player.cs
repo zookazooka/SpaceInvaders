@@ -29,8 +29,7 @@ public class Player : MonoBehaviour
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true; // For debugging
         process.StartInfo.CreateNoWindow = true;
-        await waitForPlayers();
-        gameStarted = true;
+        
 
          try
         {
@@ -40,6 +39,8 @@ public class Player : MonoBehaviour
             // Start a thread to read output asynchronously
             Thread readThread = new Thread(ReadOutput);
             readThread.Start();
+            await waitForPlayers();
+            gameStarted = true;
         }
         catch (System.Exception e)
         {

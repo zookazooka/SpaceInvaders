@@ -13,6 +13,7 @@ public class WebSocketClient : MonoBehaviour
     [SerializeField] private Player player;
     [SerializeField] private remotePlayer rplayer;
     [SerializeField] private Invaders invaders;
+    [SerializeField] private MysteryShip mysteryship;
 
     string latestMessage;
 
@@ -20,8 +21,8 @@ public class WebSocketClient : MonoBehaviour
 
     async void Start()
     {
-        string server = "";
-        websocket = new WebSocket("ws://18.175.247.141:3000");
+        //websocket = new WebSocket("ws://18.175.247.141:3000");
+        websocket = new WebSocket("ws://localhost:3000");
         websocket.OnOpen += () => 
         {
             Debug.Log("Connected to server");
@@ -41,19 +42,19 @@ public class WebSocketClient : MonoBehaviour
             //handle remote player function here (message);
         
             //string messageType;
-            if (message.Substring(0, 3) == "MOV") {
+            if (message.Substring(0, 3) == "MOV") { //unused
                 //handle movement
                 //rplayer.Move(message.Substring(3));
             }
-            else if(message.Substring(0, 3) == "IND") {
+            else if(message.Substring(0, 3) == "IND") { //index of invader killed
                 //handle index
                 invaders.KillInvader(int.Parse(message.Substring(3)));
             }
-            else if (message.Substring(0, 3) == "POS") {
+            else if (message.Substring(0, 3) == "POS") {  //update position of remote player
                 string position = message.Substring(3);
                 rplayer.Move(float.Parse(position));
             }
-            else if (message.Substring(0, 3) == "MOS") {
+            else if (message.Substring(0, 3) == "MOS") { //index of invader firing missile
                 string position = message.Substring(3);
                 invaders.RemoteMissileAttack(position);
             }
@@ -64,6 +65,10 @@ public class WebSocketClient : MonoBehaviour
             else if (message == "Laser") {
                 Debug.Log("LASER");
                 rplayer.Shoot();
+            }
+            else if (message.Substring(0, 3) == "POW") {
+                string index = message.Substring(3);
+                mysteryship.remotePowerUp(int.Parse(index));
             }
 
         };
@@ -113,6 +118,9 @@ public class WebSocketClient : MonoBehaviour
             else if (type == "mposition"){
                 message = "MOS" + data;
             }
+            else if (type == "powerup") {
+                message = "POW" + data;
+            }
             await websocket.Send(System.Text.Encoding.UTF8.GetBytes(message));
         }
     }
@@ -142,6 +150,12 @@ public class WebSocketClient : MonoBehaviour
         Debug.Log("SENDING: " + position);
         await sendInput(position, "mposition");
     }
+
+    public async Task sendPowerUp(int index) {
+        Debug.Log("Sending: " + index);
+        await sendInput(index.ToString(), "powerup");
+    }
+
 
     async void OnApplicationQuit()
     {

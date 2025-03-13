@@ -164,6 +164,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
             //missile spawns are inversly proportional to number of invaders alive
             if (Random.value < (1.0f / (float)(totalInvaders-amountKilled))) {
+                Debug.Log("MISSILE ATTACK");
                 Instantiate(this.missilePrefab, invader.position, Quaternion.identity);
 
                 _=SendMPositionAsync(invader.position.ToString());
@@ -179,7 +180,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
     public void RemoteMissileAttack(string position)
     {
-        position = position.Trim('(', ')');
+        position = position.Trim('(',')');
         string[] components = position.Split(',');
 
         float x = float.Parse(components[0]);

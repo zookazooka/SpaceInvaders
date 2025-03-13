@@ -53,11 +53,23 @@ public class MysteryShip : MonoBehaviour
         InvokeRepeating(nameof(DropPowerUp), powerUpDropInterval, powerUpDropInterval);
     }
 
+    private async Task SendPowerUpAsync(int index) {
+        if (websocket == null) {
+            return;
+        }
+        await websocket.sendPowerUp(index);
+    }
+
     private async Task waitForPlayers() {
         while (WebSocketClient.serverFull == false) {
             Debug.Log("Waiting for players");
             await Task.Delay(1000);
         }
+    }
+
+    public void remotePowerUp(int index) {
+        Instantiate(powerUpPrefabs[index], this.transform.position, Quaternion.identity);
+
     }
 
     private void Update()
@@ -86,6 +98,7 @@ public class MysteryShip : MonoBehaviour
         {
             int randomIndex = Random.Range(0, powerUpPrefabs.Length);
             Instantiate(powerUpPrefabs[randomIndex], this.transform.position, Quaternion.identity);
+            _=SendPowerUpAsync(randomIndex);
         }
     }
     private void OnTriggerEnter2D(Collider2D other)
