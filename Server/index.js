@@ -20,7 +20,7 @@ wss.on('connection', (ws) => {
     }
     console.log("Client connected");
     ws.send("Successfully connected to server");
-    if (wss.clients.size == 1) {
+    if (wss.clients.size == 2) {
         serverFull = true;
         wss.clients.forEach(client => {
             client.send("FULL");

@@ -21,8 +21,8 @@ public class WebSocketClient : MonoBehaviour
 
     async void Start()
     {
-        //websocket = new WebSocket("ws://18.175.247.141:3000");
-        websocket = new WebSocket("ws://localhost:3000");
+        websocket = new WebSocket("ws://18.175.247.141:3000");
+        //websocket = new WebSocket("ws://localhost:3000");
         websocket.OnOpen += () => 
         {
             Debug.Log("Connected to server");
