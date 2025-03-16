@@ -52,6 +52,7 @@ public class WebSocketClient : MonoBehaviour
             }
             else if (message.Substring(0, 3) == "POS") {  //update position of remote player
                 string position = message.Substring(3);
+                ReplayManager.Instance.LogEvent("RemotePosition", new { x = float.Parse(position) });
                 rplayer.Move(float.Parse(position));
             }
             else if (message.Substring(0, 3) == "MOS") { //index of invader firing missile

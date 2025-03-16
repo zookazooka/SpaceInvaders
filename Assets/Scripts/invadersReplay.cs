@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
-public class Invaders : MonoBehaviour
+public class InvadersReplay : MonoBehaviour
 {
     public int rows = 5;
 
@@ -15,8 +15,6 @@ public class Invaders : MonoBehaviour
     public int[] invaderArray;
 
     public Invader[] invaderObjects;
-    
-    public float actualSpeed;
 
     public WebSocketClient websocket;
     private bool gameStarted = false;
@@ -44,7 +42,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
             float width = 2.0f * (this.columns-1);
             float height = 2.0f * (this.rows-1);
 
-            //find center point 
+            //find center point
             Vector2 centering = new Vector2(-width/2, -height/2);
             Vector3 rowPosition = new Vector3(centering.x , centering.y + row*2.0f ,0.0f);
 
@@ -67,8 +65,8 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
     private void Update() //update is called every frame the game is running
     {
-        actualSpeed = this.speed.Evaluate(this.percentKilled);
-        this.transform.position += _direction * actualSpeed * Time.deltaTime; //moves the block of invaders to the right initially
+
+        this.transform.position += _direction * this.speed.Evaluate(this.percentKilled) * Time.deltaTime; //moves the block of invaders to the right initially
         Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
         Vector3 rightEdge = Camera.main.ViewportToWorldPoint(Vector3.right);
         foreach(Transform invader in this.transform)
@@ -87,17 +85,15 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
         }
     }
 
-
     private void AdvanceRow()
-{
-    _direction.x *= -1f;
-    Vector3 position = transform.position;
-    position.y -= 1f;
-    transform.position = position;
-    ReplayManager.Instance.LogEvent("InvadersAdvanced", new { position = position, direction = _direction });
-}
+    {
+        _direction.x *= -1.0f; //flip direction
+
+        Vector3 position = this.transform.position;
+        position.y -= 1.0f; //advance the invaders down the screen by 1
+        this.transform.position = position;
+    }
     public void InvaderKilled(int index) {
-        if (ReplayManager.Instance.IsReplaying()) return;
         UnityEngine.Debug.Log("RUNS HERE");
         if (invaderArray[index] == 1)
         {
@@ -155,8 +151,6 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
     private void MissileAttack()
     {
-        if (ReplayManager.Instance.IsReplaying()) return;
-
         foreach(Transform invader in this.transform) 
         {
             if (!invader.gameObject.activeInHierarchy) 
@@ -169,7 +163,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
                 Debug.Log("MISSILE ATTACK");
                 
                 Instantiate(this.missilePrefab, invader.position, Quaternion.identity);
-                ReplayManager.Instance.LogEvent("MissileSpawn", new {position = invader.position}); //logs invader deaths.
+                ReplayManager.Instance.LogEvent("MissileSpawn", new {invader.position}); //logs invader deaths.
 
 
                 _=SendMPositionAsync(invader.position.ToString());

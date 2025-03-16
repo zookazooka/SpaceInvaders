@@ -45,8 +45,7 @@ public class MysteryShip : MonoBehaviour
     private async void Start()
     {
         elapsedTime = 0f; // Initialize timer at the start
-        await waitForPlayers();
-        gameStarted = true;
+        
         InvokeRepeating(nameof(MissileAttack), this.missileAttackRate, this.missileAttackRate);
         
         // Start the random power-up drop process
@@ -121,6 +120,8 @@ public class MysteryShip : MonoBehaviour
 
     private void MissileAttack()
     {
+        if (ReplayManager.Instance.IsReplaying()) return;
+
         if (this.gameObject.activeInHierarchy) // Only spawn missiles if ship is active
         {
             Debug.Log("MissileAttack() called");

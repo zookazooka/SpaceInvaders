@@ -19,6 +19,8 @@ public class Player : MonoBehaviour
     private bool gameStarted = false;
     [SerializeField] private WebSocketClient websocket;
 
+  //  [SerializeField] private ReplayManager ReplayManager;
+
     async void Start() {
 
         
@@ -65,10 +67,7 @@ public class Player : MonoBehaviour
 
     //better way to implement this is have a public function in websocket.cs but i cba rn
     private async Task waitForPlayers() {
-        while (WebSocketClient.serverFull == false) {
-            UnityEngine.Debug.Log("Waiting for players");
-            await Task.Delay(3000);
-        }
+       
     }
 
     private async Task SendMovementAsync(string command) {
@@ -81,7 +80,8 @@ public class Player : MonoBehaviour
     }
     private void Update()
     {
-        if (!gameStarted) return;
+        if (ReplayManager.Instance.IsReplaying()) return;
+      //  if (!gameStarted) return;
         string command;
         lock (this) // Ensure thread safety
         {
@@ -116,9 +116,10 @@ public class Player : MonoBehaviour
         //command = string.Concat(command[0], command[2]);
         //_=SendMovementAsync(command);
         _=SendPositionAsync(this.transform.position.x);
+        
 
         }
-        
+        ReplayManager.Instance.LogEvent("LocalPosition", new { x = this.transform.position.x });
         
     }
     private async Task SendPositionAsync(float position) {
@@ -135,6 +136,8 @@ public class Player : MonoBehaviour
         if (!_laserActive) {
              //when we shoot we instantiate a new prefab, using the players position and rotation is set to 'default' or identity
              Projectile projectile = Instantiate(this.laserPrefab, this.transform.position, Quaternion.identity);
+             ReplayManager.Instance.LogEvent("LocalShoot", new { x= this.transform.position.x }); //logs invader deaths.
+
              projectile.destroyed += LaserDestroyed;
              if (canShootTriple)
             {
@@ -161,7 +164,7 @@ public class Player : MonoBehaviour
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Invader") || other.gameObject.layer == LayerMask.NameToLayer("Missile")) {
             //game over
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            ReplayManager.Instance.StartReplay();
         }
     }
 

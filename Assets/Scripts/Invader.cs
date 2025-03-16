@@ -30,6 +30,8 @@ public class Invader : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (ReplayManager.Instance.IsReplaying()) return;
+
         if (other.gameObject.layer == LayerMask.NameToLayer("Laser")) { //on laser-invader collision deactivate invader
             this.gameObject.SetActive(false);
 
