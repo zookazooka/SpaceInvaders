@@ -12,6 +12,8 @@ public class ReplayManager : MonoBehaviour
 
     private bool isReplaying = false;
     private float replayTimer = 0f;
+    public AnimationCurve speed;
+
 
     [SerializeField] private Player localPlayer;
     [SerializeField] private Invaders invaders;
@@ -23,7 +25,11 @@ public class ReplayManager : MonoBehaviour
     private float lastInvadersEventTime = 0f;
     private int replayAmountKilled = 0;
 
+    private float actualSpeed;
+
     private float gameStartTime;
+    private Vector3 _direction = Vector2.right;
+
 
     [System.Serializable]
     private class ReplayEvent
@@ -127,49 +133,32 @@ public class ReplayManager : MonoBehaviour
 {
     // Check if invaders exist
     if (invaders == null || invaders.transform.childCount == 0) return;
+        Debug.Log("amount dead in replay"+ replayAmountKilled);
+        actualSpeed = this.speed.Evaluate((float)replayAmountKilled/55.0f);
+        invaders.transform.position += _direction * actualSpeed * Time.deltaTime; //moves the block of invaders to the right initially
+        Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
+        Vector3 rightEdge = Camera.main.ViewportToWorldPoint(Vector3.right);
+        foreach(Transform invader in invaders.transform)
+        {
+            if(!invader.gameObject.activeInHierarchy) { //this is to check against any dectivated(dead) invaders
+                continue;
+            }
 
-    float invaderSpeed = invaders.actualSpeed;
-    Vector3 movementThisFrame = invadersDirection * invaderSpeed * deltaTime;
-
-    // Calculate the potential next position
-    Vector3 nextPosition = invaders.transform.position + movementThisFrame;
-
-    // Get screen boundaries in world coordinates
-    Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
-    Vector3 rightEdge = Camera.main.ViewportToWorldPoint(Vector3.right);
-
-    // Find the farthest invader in the current direction
-    float farthestX = 0f;
-    foreach (Transform invader in invaders.transform)
-    {
-        if (!invader.gameObject.activeInHierarchy) continue;
-        float invaderX = invader.position.x;
-        if (invadersDirection.x > 0 && invaderX > farthestX)
-            farthestX = invaderX;
-        else if (invadersDirection.x < 0 && invaderX < farthestX)
-            farthestX = invaderX;
-    }
-
-    // Check if the farthest invader will hit the edge
-    bool hitEdge = false;
-    if (invadersDirection.x > 0 && farthestX + movementThisFrame.x >= rightEdge.x - 0.5f)
-        hitEdge = true;
-    else if (invadersDirection.x < 0 && farthestX + movementThisFrame.x <= leftEdge.x + 0.5f)
-        hitEdge = true;
-
-    if (hitEdge)
-    {
-        // Reverse direction and move down immediately
-        invadersDirection.x *= -1f;
-        nextPosition.y -= 1f; // Move down by 1 unit (adjust this value as needed)
-        invaders.transform.position = nextPosition;
-        Debug.Log($"Edge hit: Direction flipped to {invadersDirection}");
-    }
-    else
-    {
-        // Apply normal movement if no edge is hit
-        invaders.transform.position = nextPosition;
-    }
+            if(_direction == Vector3.right && invader.position.x >= (rightEdge.x - 1.0f))
+            {
+                AdvanceRow();
+            } else if (_direction == Vector3.left && invader.position.x <= (leftEdge.x +  1.0f)) //1.0f is so invaders dont clip off edge of screen
+            {
+                AdvanceRow();
+            }
+        }
+}
+ private void AdvanceRow()
+{
+    _direction.x *= -1f;
+    Vector3 position = invaders.transform.position;
+    position.y -= 1f;
+    invaders.transform.position = position;
 }
  private void ApplyEvent(ReplayEvent e)
     {
@@ -195,9 +184,9 @@ public class ReplayManager : MonoBehaviour
                 break;
 
            case "InvadersAdvanced":
-               var eventData = (dynamic)e.data;
-                invaders.transform.position = new Vector3(eventData.position.x, eventData.position.y, 0);
-                invadersDirection = new Vector3(eventData.direction.x, eventData.direction.y, 0);
+              // var eventData = (dynamic)e.data;
+                //invaders.transform.position = new Vector3(eventData.position.x, eventData.position.y, 0);
+                //invadersDirection = new Vector3(eventData.direction.x, eventData.direction.y, 0);
                 Debug.Log($"Applied InvadersAdvanced: Position={invaders.transform.position}, Direction={invadersDirection}");
                 break;
 

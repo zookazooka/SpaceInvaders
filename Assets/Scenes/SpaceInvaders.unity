@@ -119,6 +119,54 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &87013233
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 87013235}
+  - component: {fileID: 87013234}
+  m_Layer: 0
+  m_Name: ReplayManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &87013234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87013233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f2404c6f424f064397d202f4d1cca09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  localPlayer: {fileID: 2146401406}
+  invaders: {fileID: 2048602763}
+  laserPrefab: {fileID: 7904220476291247660, guid: 77ffb34d217bcce48be49e1120cf5718, type: 3}
+  missilePrefab: {fileID: 6805658244088273721, guid: 0bf19cc24d10f1a4498c3ccb67fd5d53, type: 3}
+--- !u!4 &87013235
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87013233}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &210438607
 GameObject:
   m_ObjectHideFlags: 0
@@ -1447,6 +1495,7 @@ MonoBehaviour:
   player: {fileID: 2146401406}
   rplayer: {fileID: 1519680859}
   invaders: {fileID: 2048602763}
+  mysteryship: {fileID: 0}
 --- !u!4 &1997723508
 Transform:
   m_ObjectHideFlags: 0
@@ -1503,6 +1552,7 @@ MonoBehaviour:
   missileAttackRate: 5
   invaderArray: 
   invaderObjects: []
+  actualSpeed: 0
   websocket: {fileID: 1997723507}
   speed:
     serializedVersion: 2
@@ -1932,3 +1982,4 @@ SceneRoots:
   - {fileID: 2048602764}
   - {fileID: 870412305}
   - {fileID: 1997723508}
+  - {fileID: 87013235}

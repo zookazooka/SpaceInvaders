@@ -67,6 +67,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
     private void Update() //update is called every frame the game is running
     {
+        if (ReplayManager.Instance.IsReplaying()) return;
         actualSpeed = this.speed.Evaluate(this.percentKilled);
         this.transform.position += _direction * actualSpeed * Time.deltaTime; //moves the block of invaders to the right initially
         Vector3 leftEdge = Camera.main.ViewportToWorldPoint(Vector3.zero);
