@@ -196,5 +196,7 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
 
         Vector3 invaderPos = new Vector3(x, y, z);
         Instantiate(this.missilePrefab, invaderPos, Quaternion.identity);
+        ReplayManager.Instance.LogEvent("MissileSpawn", new {position = invaderPos}); //logs invader deaths.
+
     }
 }

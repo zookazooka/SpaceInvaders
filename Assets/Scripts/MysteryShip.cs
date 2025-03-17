@@ -68,6 +68,8 @@ public class MysteryShip : MonoBehaviour
 
     public void remotePowerUp(int index) {
         Instantiate(powerUpPrefabs[index], this.transform.position, Quaternion.identity);
+        ReplayManager.Instance.LogEvent("PowerSpawn", new {position = this.transform.position, type = index }); //logs invader deaths.
+
 
     }
 

@@ -172,9 +172,15 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  powerUpPrefabs:
+  - {fileID: 8898348045732985253, guid: 1e4f87e451419384eb8c0cfabb59cbaf, type: 3}
+  - {fileID: 5866577883516554065, guid: 4ce7f969aa90823469f07b166887353a, type: 3}
   localPlayer: {fileID: 2146401406}
   invaders: {fileID: 2048602763}
+  remotePlayer: {fileID: 1519680859}
+  MysteryShip: {fileID: 1077345809}
   laserPrefab: {fileID: 7904220476291247660, guid: 77ffb34d217bcce48be49e1120cf5718, type: 3}
+  RlaserPrefab: {fileID: 7904220476291247660, guid: 885c803416548854c89e75e87c810f35, type: 3}
   missilePrefab: {fileID: 6805658244088273721, guid: 0bf19cc24d10f1a4498c3ccb67fd5d53, type: 3}
 --- !u!4 &87013235
 Transform:

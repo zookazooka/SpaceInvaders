@@ -23,6 +23,8 @@ public class ReplayManager : MonoBehaviour
     [SerializeField] private remotePlayer remotePlayer;
     [SerializeField] private MysteryShip MysteryShip;
     public Projectile laserPrefab;
+    public Projectile RlaserPrefab;
+
     public Projectile missilePrefab;
 
     private Vector3 invadersDirection;
@@ -282,6 +284,12 @@ public class ReplayManager : MonoBehaviour
                 Vector3 shootPosition = localPlayer.transform.position;
                 shootPosition.x = shootData.x;
                 Instantiate(laserPrefab, shootPosition, Quaternion.identity);
+                break;
+            case "RemoteShoot":
+                var RshootData = (dynamic)e.data;
+                Vector3 RshootPosition = remotePlayer.transform.position;
+                RshootPosition.x = RshootData.x;
+                Instantiate(RlaserPrefab, RshootPosition, Quaternion.identity);
                 break;
 
             case "MissileSpawn":
