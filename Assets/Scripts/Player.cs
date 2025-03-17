@@ -164,7 +164,9 @@ public class Player : MonoBehaviour
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("Invader") || other.gameObject.layer == LayerMask.NameToLayer("Missile")) {
             //game over
-            ReplayManager.Instance.StartReplay();
+            UnityEngine.Debug.Log($"Attempting to load 'endGame'. IsReplaying: {ReplayManager.Instance.IsReplaying()}");
+        SceneManager.LoadScene("endGame");
+        UnityEngine.Debug.Log("Scene load command issued for 'endGame'.");
         }
     }
 

@@ -104,7 +104,7 @@ public class ReplayManager : MonoBehaviour
         lastInvadersEventTime = 0f;
         replayAmountKilled = 0;
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        SceneManager.LoadScene("SpaceInvaders");
     }
 
     void Update()
