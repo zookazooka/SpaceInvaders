@@ -73,7 +73,9 @@ public class MysteryShip : MonoBehaviour
 
     private void Update()
     {
-        if (!gameStarted) return;
+        //if (!gameStarted) return;
+        if (ReplayManager.Instance.IsReplaying()) return;
+
         elapsedTime += Time.deltaTime;
         // Move the ship horizontally, flipping direction at screen edges
         this.transform.position += _direction * speed * Time.deltaTime;
@@ -88,6 +90,8 @@ public class MysteryShip : MonoBehaviour
         {
             _direction.x *= -1.0f; // Flip to right
         }
+        ReplayManager.Instance.LogEvent("MystPosition", new { x = this.transform.position.x });
+
     }
 
     private void DropPowerUp()
@@ -98,6 +102,8 @@ public class MysteryShip : MonoBehaviour
             int randomIndex = Random.Range(0, powerUpPrefabs.Length);
             Instantiate(powerUpPrefabs[randomIndex], this.transform.position, Quaternion.identity);
             _=SendPowerUpAsync(randomIndex);
+            ReplayManager.Instance.LogEvent("PowerSpawn", new {position = this.transform.position, type = randomIndex }); //logs invader deaths.
+
         }
     }
     private void OnTriggerEnter2D(Collider2D other)
@@ -131,6 +137,8 @@ public class MysteryShip : MonoBehaviour
                 Debug.Log("BANG"); // Check if the function is running
 
                 Instantiate(missilePrefab, this.transform.position, Quaternion.identity);
+                ReplayManager.Instance.LogEvent("MissileSpawn", new {position = this.transform.position}); //logs invader deaths.
+
             }
         }
     }

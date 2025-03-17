@@ -86,6 +86,8 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
                 AdvanceRow();
             }
         }
+        ReplayManager.Instance.LogEvent("InvPosition", new { position = this.transform.position });
+
     }
 
 
@@ -95,7 +97,6 @@ public event System.Action allKilled = delegate { }; // Prevent null reference
     Vector3 position = transform.position;
     position.y -= 1f;
     transform.position = position;
-    ReplayManager.Instance.LogEvent("InvadersAdvanced", new { position = position, direction = _direction });
 }
     public void InvaderKilled(int index) {
         if (ReplayManager.Instance.IsReplaying()) return;

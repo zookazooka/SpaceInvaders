@@ -21,6 +21,8 @@ public class remotePlayer : MonoBehaviour
     Vector3 newPosition = transform.position; // Get the current position
     newPosition.x = command; // Modify only the x-coordinate
     transform.position = newPosition; // Assign the new position back
+    ReplayManager.Instance.LogEvent("RemotePosition", new { x = this.transform.position.x });
+
 }
 
 
