@@ -27,6 +27,7 @@ public class WebSocketClient : MonoBehaviour
         {
             Debug.Log("Connected to server");
 
+
             
         };
 

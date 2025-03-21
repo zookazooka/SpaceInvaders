@@ -19,6 +19,9 @@ public class Player : MonoBehaviour
     private bool gameStarted = false;
     [SerializeField] private WebSocketClient websocket;
 
+    private float inputTime;
+    private float responseTime;
+
   //  [SerializeField] private ReplayManager ReplayManager;
 
     async void Start() {
@@ -67,6 +70,10 @@ public class Player : MonoBehaviour
 
     //better way to implement this is have a public function in websocket.cs but i cba rn
     private async Task waitForPlayers() {
+        while (WebSocketClient.serverFull == false) {
+             UnityEngine.Debug.Log("Waiting for players");
+             await Task.Delay(3000);
+         }
        
     }
 
@@ -81,11 +88,13 @@ public class Player : MonoBehaviour
     private void Update()
     {
         if (ReplayManager.Instance.IsReplaying()) return;
-      //  if (!gameStarted) return;
+        if (!gameStarted) return;
         string command;
         lock (this) // Ensure thread safety
         {
             command = latestCommand;
+            inputTime = Time.time;
+
             latestCommand = ""; // Clear after reading
         }
         
@@ -96,12 +105,16 @@ public class Player : MonoBehaviour
             {
                 case 'L':
                     this.transform.position += Vector3.left * this.speed * Time.deltaTime;
+                    UnityEngine.Debug.Log("Latency: " + (Time.time - inputTime));
                     break;
                 case 'R':
                     this.transform.position += Vector3.right * this.speed * Time.deltaTime;
+                    UnityEngine.Debug.Log("Latency: " + (Time.time - inputTime));
 
                     break;
                 case 'S':
+                    UnityEngine.Debug.Log("Latency: " + (Time.time - inputTime));
+
                     break;
             }
             switch (command[2])

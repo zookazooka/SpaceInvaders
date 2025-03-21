@@ -45,7 +45,8 @@ public class MysteryShip : MonoBehaviour
     private async void Start()
     {
         elapsedTime = 0f; // Initialize timer at the start
-        
+        await waitForPlayers();
+        gameStarted = true;
         InvokeRepeating(nameof(MissileAttack), this.missileAttackRate, this.missileAttackRate);
         
         // Start the random power-up drop process
@@ -75,7 +76,7 @@ public class MysteryShip : MonoBehaviour
 
     private void Update()
     {
-        //if (!gameStarted) return;
+        if (!gameStarted) return;
         if (ReplayManager.Instance.IsReplaying()) return;
 
         elapsedTime += Time.deltaTime;
