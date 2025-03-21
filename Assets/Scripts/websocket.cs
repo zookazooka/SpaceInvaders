@@ -171,12 +171,10 @@ public class WebSocketClient : MonoBehaviour
         #if !UNITY_WEBGL
         if (websocket != null)
         {
-            // Process all queued messages (OnMessage will update latestMessage)
             websocket.DispatchMessageQueue();
         }
         #endif
 
-    // Process only the latest received message, discarding any earlier ones
     
 
 

@@ -8,10 +8,13 @@ public class Invader : MonoBehaviour
     public System.Action killed;
     private SpriteRenderer _spriteRenderer; //changes which sprite is being rendered
     private int _animationFrame; // keeps track of what is being rendered
+    [SerializeField] private Player player;
 
     private void Awake() //first function that gets called(automatically)
     {
         _spriteRenderer = GetComponent<SpriteRenderer>(); //assigns sprite renderer to game object we are running script on
+        player = FindObjectOfType<Player>();
+
 
     }
 
@@ -36,6 +39,7 @@ public class Invader : MonoBehaviour
             this.gameObject.SetActive(false);
 
             this.killed.Invoke();
+            player.IncrementScore();
         }   
     }
 }

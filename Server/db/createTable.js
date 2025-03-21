@@ -6,30 +6,28 @@ async function createUsersTable() {
     const command = new CreateTableCommand({
         TableName: "Users",
         KeySchema: [
-            { AttributeName: "player_no", KeyType: "HASH" }, // Partition key
+            { AttributeName: "player_name", KeyType: "HASH" }, // Partition key
             { AttributeName: "timestamp", KeyType: "RANGE" } // Sort key
         ],
         AttributeDefinitions: [
-            { AttributeName: "player_no", AttributeType: "N" },
-           // { AttributeName: "player_name", AttributeType: "S" },
+            { AttributeName: "player_name", AttributeType: "S" },
             { AttributeName: "scores", AttributeType: "N" },
-            { AttributeName: "timestamp", AttributeType: "S" }
+            { AttributeName: "timestamp", AttributeType: "S" },
+            { AttributeName: "score_partition", AttributeType: "S" }  // New attribute for GSI partitioning
         ],
-	BillingMode: "PAY_PER_REQUEST",
+        BillingMode: "PAY_PER_REQUEST",
         GlobalSecondaryIndexes: [
-        {
-            IndexName: "scoreIndex",
-            KeySchema: [
-                {AttributeName: "scores", KeyType: "HASH"},
-                {AttributeName: "timestamp", KeyType: "RANGE"}
-            ],
-            Projection: {
-                ProjectionType: "ALL"
+            {
+                IndexName: "scoreIndex",
+                KeySchema: [
+                    { AttributeName: "score_partition", KeyType: "HASH" }, // Static partition key
+                    { AttributeName: "scores", KeyType: "RANGE" } // Sort key (DynamoDB sorts by this)
+                ],
+                Projection: {
+                    ProjectionType: "ALL"
+                }
             }
-    	}]
-	
-
-
+        ]
     });
 
     try {

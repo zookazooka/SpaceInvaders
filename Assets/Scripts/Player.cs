@@ -13,7 +13,7 @@ public class Player : MonoBehaviour
     private bool isRunning = true;
     public Projectile laserPrefab; //setup prefab for laser of type pprojectile
     public float speed = 5.0f;
-
+    public int playerScore;
     private bool _laserActive;
     private bool canShootTriple = false;
     private bool gameStarted = false;
@@ -22,7 +22,7 @@ public class Player : MonoBehaviour
   //  [SerializeField] private ReplayManager ReplayManager;
 
     async void Start() {
-
+        playerScore = 0;
         
         process = new Process();
         process.StartInfo.FileName = "cmd.exe"; // Use cmd.exe to run the batch file
@@ -167,6 +167,8 @@ public class Player : MonoBehaviour
             UnityEngine.Debug.Log($"Attempting to load 'endGame'. IsReplaying: {ReplayManager.Instance.IsReplaying()}");
         SceneManager.LoadScene("endGame");
         UnityEngine.Debug.Log("Scene load command issued for 'endGame'.");
+        PlayerPrefs.SetInt("playerScore", playerScore);
+
         }
     }
 
@@ -182,6 +184,11 @@ public class Player : MonoBehaviour
         speed *= 2; // Double the speed
         yield return new WaitForSeconds(duration);
         speed /= 2; // Reset speed
+    }
+
+    public void IncrementScore() {
+        playerScore = playerScore + 10;
+        UnityEngine.Debug.Log("Incremented");
     }
 
     void OnApplicationQuit()

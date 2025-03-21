@@ -5,11 +5,13 @@ const client = new DynamoDBClient({ region: 'eu-west-2'});
 async function createItem(params) {
     const command = new PutItemCommand(params);
     try {
-        data = await client.send(command); 
-        console.log("Added: data successfully");
+        const data = await client.send(command); 
+        console.log("Added data successfully");
+        return data; 
     }
     catch (error) {
         console.error("Error: ", error);
+        throw error; 
     }
 }  
 
@@ -23,10 +25,12 @@ async function readItem(params) {
         }
         else {
             console.log("Doesn't exist");
+            return null; 
         }
     }
     catch (error) {
         console.error("Error: ", error);
+        throw error;
     }
 }
 
@@ -35,9 +39,11 @@ async function updateItem(params) {
     try {
         const data = await client.send(command);
         console.log("Updated: ", data);
+        return data;
     }
     catch (error) {
         console.error("Error: ", error);
+        throw error;
     }
 }
 
@@ -46,11 +52,12 @@ async function deleteItem(params) {
     try {
         const data = await client.send(command);
         console.log("Deleted: ", data);
+        return data;
     }
     catch (error) {
         console.error("Error: ", error);
+        throw error;
     }
-
 }
 
 async function queryTable(params) {
@@ -62,8 +69,8 @@ async function queryTable(params) {
     }
     catch (error) {
         console.error("Error: ", error);
+        throw error;
     }
 }
-
 
 export {createItem, readItem, updateItem, deleteItem, queryTable};
